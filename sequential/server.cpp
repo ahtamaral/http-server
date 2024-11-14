@@ -1,9 +1,17 @@
+
+// Básicos
 #include <iostream>
 #include <string>
 #include <cstring>
+
+// Sockets
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+
+// Threads
+#include <thread>  // For std::this_thread::sleep_for
+#include <chrono>  // For std::chrono::seconds
 
 #define PORT 8090
 
@@ -14,7 +22,7 @@ void handle_client( int client_socket )
 
     std::cout << "Received request:\n" << buffer << std::endl;
 
-    while(true){}
+    // parseRequest()... 
 
     // Cria uma resposta HTTP básica
     std::string response =
@@ -24,7 +32,10 @@ void handle_client( int client_socket )
         "<html>\n"
         "<head><title>Simple C++ HTTP Server</title></head>\n"
         "<body><h1>Hello from C++ Server!</h1></body>\n"
-        "</html>";
+        "</html>\r\n\r\n"; // Essa sequência final significa END OF RESPONSE. Importante mantê-la.
+
+    // Sleep para simular uma carga de trabalho do servidor.
+    // std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // Envia a resposta ao cliente
     send(client_socket, response.c_str(), response.length(), 0);
@@ -52,7 +63,7 @@ int main()
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
 
-    // Associa o socket à porta 8080
+    // Associa o socket à porta 8090
     if ( bind( server_fd, (struct sockaddr*) &address, sizeof(address) ) < 0)
     {
         perror("Bind failed");
@@ -60,7 +71,8 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    // Inicia o servidor em modo de escuta
+    // Inicia o servidor em modo de escuta 
+    // BACKLOG SIZE: É O TAMANHO DA FILA DO SOCKET
     if ( listen( server_fd, 10 ) < 0)
     {
         perror("Listen failed");
